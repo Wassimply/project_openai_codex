@@ -1,4 +1,4 @@
- import express from 'express';
+import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import axios from 'axios';
@@ -17,7 +17,7 @@ app.use(express.json());
 // POST endpoint to receive question from client
 app.post('/question', async (req, res) => {
   try {
-    const question = req.body.question;
+    const question = req.body.prompt;
 
     // Send POST request to Airtable API to insert a new record
     const insertUrl = `https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA`;
