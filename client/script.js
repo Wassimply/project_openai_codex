@@ -89,27 +89,33 @@ const handleSubmit = async (e) => {
   const question = data.get('prompt');
   const airtableUrl = `https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA?maxRecords=1&filterByFormula=AND({Question}="${question}")`;
 
-  const response = await fetch(airtableUrl, {
-    headers: {
-      'Authorization': `Bearer keyO4UTbHbZ9n0vui`
-    }
-  });
+  try {
+    const response = await fetch(airtableUrl, {
+      headers: {
+        'Authorization': `Bearer keyO4UTbHbZ9n0vui`
+      }
+    });
 
-    clearInterval(loadInterval)
-    messageDiv.innerHTML = " "
+    clearInterval(loadInterval);
+    messageDiv.innerHTML = "";
 
     if (response.ok) {
-        const data = await response.json();
-        const answer = data.records[0].fields.Answer.trim() // get the answer field value from the Airtable response
+      const data = await response.json();
+      const answer = data.records[0].fields.Answer.trim(); // get the answer field value from the Airtable response
 
-        typeText(messageDiv, answer)
+      typeText(messageDiv, answer);
     } else {
-        const err = await response.text()
+      const err = await response.text();
 
-        messageDiv.innerHTML = "Something went wrong"
-        alert(err)
+      messageDiv.innerHTML = "Something went wrong";
+      alert(err);
     }
-}
+  } catch (error) {
+    console.error(error);
+    messageDiv.innerHTML = "idk";
+  }
+};
+
 
 form.addEventListener('submit', handleSubmit)
 form.addEventListener('keyup', (e) => {
