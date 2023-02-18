@@ -1,5 +1,6 @@
 import bot from './assets/bot.svg';
 import user from './assets/user.svg';
+import axios from 'axios';
 
 const form = document.querySelector('form');
 const chatContainer = document.querySelector('#chat_container');
@@ -96,6 +97,7 @@ const handleSubmit = async (e) => {
         'Authorization': `Bearer keyO4UTbHbZ9n0vui`
       }
     });
+    console.log('Response:', response);
 
     clearInterval(loadInterval);
     messageDiv.innerHTML = "";
