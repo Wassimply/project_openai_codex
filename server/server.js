@@ -9,6 +9,9 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 2000;
+
 app.get('/', async (req, res) => {
   res.status(200).send({
     message: 'Hello from Pure!'
@@ -22,13 +25,30 @@ app.post('/', async (req, res) => {
     const headers = {
       Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`
     };
-    const response = await axios.get(airtableUrl, { headers });
-    const record = response.data.records[0];
-    const answer = record.fields.Answer;
+    
+    let retryCount = 0;
+    let answer = '';
 
-    res.status(200).send({
-      bot: answer
-    });
+    while (retryCount < MAX_RETRIES) {
+      const response = await axios.get(airtableUrl, { headers });
+      const record = response.data.records[0];
+      
+      if (record && record.fields.Answer) {
+        answer = record.fields.Answer;
+        break;
+      }
+
+      retryCount++;
+      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+    }
+
+    if (answer) {
+      res.status(200).send({
+        bot: answer
+      });
+    } else {
+      res.status(500).send('No answer found');
+    }
 
   } catch (error) {
     console.error(error)
