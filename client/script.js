@@ -61,6 +61,7 @@ function chatStripe(isAi, value, uniqueId) {
     `
     )
 }
+
 const handleSubmit = async (e) => {
     e.preventDefault()
 
@@ -108,8 +109,6 @@ const handleSubmit = async (e) => {
         messageDiv.innerHTML = "Something went wrong"
         alert(err)
     }
-}
-
 }
 
 form.addEventListener('submit', handleSubmit)
