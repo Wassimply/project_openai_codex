@@ -61,25 +61,11 @@ function chatStripe(isAi, value, uniqueId) {
   `
   );
 }
-async function handleSubmit(e) {
+
+const handleSubmit = async (e) => {
   e.preventDefault();
 
   const data = new FormData(form);
-
-  // Add new question to Airtable
-  const airtableUrl = 'https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA';
-  await fetch(airtableUrl, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer keyO4UTbHbZ9n0vui`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      fields: {
-        Question: data.get('prompt')
-      }
-    })
-  });
 
   // user's chatstripe
   chatContainer.innerHTML += chatStripe(false, data.get('prompt'));
@@ -101,37 +87,39 @@ async function handleSubmit(e) {
   loader(messageDiv);
 
   const question = data.get('prompt');
+  const airtableUrl = `https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA?maxRecords=1&filterByFormula=AND({Question}="${question}")`;
 
   try {
-    const airtableUrlWithFilter = `https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA?maxRecords=1&filterByFormula=AND({Question}="${question}")`;
-
-    // Wait up to 10 seconds for the answer to be populated
-    let answer;
-    for (let i = 0; i < 10; i++) {
-      const response = await fetch(airtableUrlWithFilter, {
-        headers: {
-          'Authorization': `Bearer keyO4UTbHbZ9n0vui`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.records.length > 0 && data.records[0].fields.Answer) {
-          answer = data.records[0].fields.Answer.trim();
-          break;
-        }
+    const response = await fetch(airtableUrl, {
+      headers: {
+        'Authorization': `Bearer keyO4UTbHbZ9n0vui`
       }
+    });
 
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
+    clearInterval(loadInterval);
+    messageDiv.innerHTML = "";
 
-    if (answer) {
+    if (response.ok) {
+      const data = await response.json();
+      const answer = data.records[0].fields.Answer.trim(); // get the answer field value from the Airtable response
+
       typeText(messageDiv, answer);
     } else {
-      messageDiv.innerHTML = "Sorry, I don't have an answer for that right now.";
+      const err = await response.text();
+
+      messageDiv.innerHTML = "Something went wrong";
+      alert(err);
     }
   } catch (error) {
     console.error(error);
-    messageDiv.innerHTML = "Oops, something went wrong. Please try again later.";
+    messageDiv.innerHTML = "idk";
   }
-}
+};
+
+
+form.addEventListener('submit', handleSubmit)
+form.addEventListener('keyup', (e) => {
+    if (e.keyCode === 13) {
+        handleSubmit(e)
+    }
+})
