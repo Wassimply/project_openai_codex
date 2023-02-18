@@ -1,6 +1,5 @@
 import bot from './assets/bot.svg';
 import user from './assets/user.svg';
-import axios from 'axios';
 
 const form = document.querySelector('form');
 const chatContainer = document.querySelector('#chat_container');
@@ -88,37 +87,34 @@ const handleSubmit = async (e) => {
   loader(messageDiv);
 
   const question = data.get('prompt');
-  console.log('User prompt:', question);
   const airtableUrl = `https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA?maxRecords=1&filterByFormula=AND({Question}="${question}")`;
 
-try {
-  const response = await axios.get(airtableUrl, {
-    headers: {
-      Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
-    },
-  });
-  console.log('Response:', response);
+  try {
+    const response = await fetch(airtableUrl, {
+      headers: {
+        'Authorization': `Bearer keyO4UTbHbZ9n0vui`
+      }
+    });
 
-  clearInterval(loadInterval);
-  messageDiv.innerHTML = "";
+    clearInterval(loadInterval);
+    messageDiv.innerHTML = "";
 
-  if (response.status === 200) {
-    const data = response.data;
-    if (data.records && data.records.length > 0) {
+    if (response.ok) {
+      const data = await response.json();
       const answer = data.records[0].fields.Answer.trim(); // get the answer field value from the Airtable response
+
       typeText(messageDiv, answer);
     } else {
-      messageDiv.innerHTML = "I'm sorry, I don't know the answer to that. Would you like to teach me?";
-    }
-  } else {
-    messageDiv.innerHTML = "Something went wrong";
-    alert(response.statusText);
-  }
-} catch (error) {
-  console.error(error);
-  messageDiv.innerHTML = "idk";
-}
+      const err = await response.text();
 
+      messageDiv.innerHTML = "Something went wrong";
+      alert(err);
+    }
+  } catch (error) {
+    console.error(error);
+    messageDiv.innerHTML = "idk";
+  }
+};
 
 
 form.addEventListener('submit', handleSubmit)
