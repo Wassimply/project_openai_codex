@@ -1,4 +1,4 @@
-what do i need to change on the client script.js ( import bot from './assets/bot.svg'
+import bot from './assets/bot.svg'
 import user from './assets/user.svg'
 
 const form = document.querySelector('form')
