@@ -24,7 +24,7 @@ app.post('/question', async (req, res) => {
     const insertData = { records: [ { fields: { Question: question } } ] };
     const insertResponse = await axios.post(insertUrl, insertData, {
       headers: {
-        Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
+        Authorization: `Bearer keyO4UTbHbZ9n0vui`,
         'Content-Type': 'application/json',
       },
     });
