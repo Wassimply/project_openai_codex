@@ -100,19 +100,25 @@ const handleSubmit = async (e) => {
 
     if (response.ok) {
   const data = await response.json();
-  const answer = data.records[0].fields.Answer.trim(); // get the answer field value from the Airtable response
-
-  typeText(messageDiv, answer);
+  if (data.records.length > 0) {
+    const answer = data.records[0].fields.Answer.trim(); // get the answer field value from the Airtable response
+    typeText(messageDiv, answer);
+  } else {
+    // no record found
+    messageDiv.innerHTML = "Sorry, I couldn't find an answer to that question. I'll look into it and get back to you soon!";
+  }
 } else {
   const err = await response.text();
 
   messageDiv.innerHTML = "Something went wrong";
   alert(err);
-  // display default message after 30 seconds
+}
+
+  // display default message after 10 seconds
   const defaultAnswer = "Sorry, I couldn't find an answer to that question. I'll look into it and get back to you soon!";
   setTimeout(() => {
     messageDiv.innerHTML = defaultAnswer;
-  }, 30000);
+  }, 10000);
 }
 
 }
