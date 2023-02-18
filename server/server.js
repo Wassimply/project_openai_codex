@@ -53,6 +53,12 @@ app.post('/question', async (req, res) => {
   }
 });
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'An internal server error occurred.' });
+});
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}.`);
