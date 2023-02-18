@@ -61,55 +61,57 @@ function chatStripe(isAi, value, uniqueId) {
     `
     )
 }
+
 const handleSubmit = async (e) => {
-  e.preventDefault()
+    e.preventDefault()
 
-  const data = new FormData(form)
+    const data = new FormData(form)
 
-  // user's chatstripe
-  chatContainer.innerHTML += chatStripe(false, data.get('prompt'))
+    // user's chatstripe
+    chatContainer.innerHTML += chatStripe(false, data.get('prompt'))
 
-  // log the user's question
-  console.log(`User question: ${data.get('prompt')}`);
+    // log the user's question
+    console.log(`User question: ${data.get('prompt')}`);
 
-  // to clear the textarea input 
-  form.reset()
+    // to clear the textarea input 
+    form.reset()
 
-  // bot's chatstripe
-  const uniqueId = generateUniqueId()
-  chatContainer.innerHTML += chatStripe(true, " ", uniqueId)
+    // bot's chatstripe
+    const uniqueId = generateUniqueId()
+    chatContainer.innerHTML += chatStripe(true, " ", uniqueId)
 
-  // to focus scroll to the bottom 
-  chatContainer.scrollTop = chatContainer.scrollHeight;
+    // to focus scroll to the bottom 
+    chatContainer.scrollTop = chatContainer.scrollHeight;
 
-  // specific message div 
-  const messageDiv = document.getElementById(uniqueId)
+    // specific message div 
+    const messageDiv = document.getElementById(uniqueId)
 
-  // messageDiv.innerHTML = "..."
-  loader(messageDiv)
+    // messageDiv.innerHTML = "..."
+    loader(messageDiv)
 
-  const question = data.get('prompt')
-  const airtableUrl = 'https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA'
+    const question = data.get('prompt')
+    const airtableUrl = 'https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA'
 
-  const requestBody = {
-    records: [
-      {
-        fields: {
-          Question: question,
-          Answer: ''
-        }
-      }
-    ]
-  }
+    const requestBody = {
+        records: [
+            {
+                fields: {
+                    Question: question,
+                    Answer: ''
+                }
+            }
+        ]
+    }
 
-  const response = await fetch(airtableUrl, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer keyO4UTbHbZ9n0vui`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(requestBody)
-  })
+    const response = await fetch(airtableUrl, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer keyO4UTbHbZ9n0vui`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+    })
+
 
   if (response.ok) {
     // Wait for up to 60 seconds for the answer field to be populated
