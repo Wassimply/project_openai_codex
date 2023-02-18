@@ -23,7 +23,7 @@ app.post('/question', async (req, res) => {
     const airtableUrl = `https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA`;
 
     // Add new question to Airtable table
-    await axios.post(airtableUrl, {
+    const response = await axios.post(airtableUrl, {
       records: [{
         fields: {
           Question: question,
@@ -37,6 +37,8 @@ app.post('/question', async (req, res) => {
       },
     });
 
+    console.log(response.data);
+
     // Wait up to 10 seconds for the answer to be populated
     let answer;
     for (let i = 0; i < 10; i++) {
@@ -49,6 +51,8 @@ app.post('/question', async (req, res) => {
           Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
         },
       });
+
+      console.log(response.data);
 
       if (response.data.records.length > 0) {
         answer = response.data.records[0].fields.Answer;
