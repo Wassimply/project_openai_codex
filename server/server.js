@@ -18,7 +18,7 @@ app.get('/', async (req, res) => {
 app.post('/', async (req, res) => {
   try {
     const question = req.body.prompt;
-    const airtableUrl = `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/QA?maxRecords=1&filterByFormula=AND({Question}="${question}")`;
+    const airtableUrl = `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/QA?maxRecords=1&filterByFormula=AND({Question}="${question.replace(/"/g, '\\"')}")`;
     const headers = {
       Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`
     };
