@@ -87,6 +87,7 @@ const handleSubmit = async (e) => {
   loader(messageDiv);
 
   const question = data.get('prompt');
+  console.log('User prompt:', question);
   const airtableUrl = `https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA?maxRecords=1&filterByFormula=AND({Question}="${question}")`;
 
   try {
