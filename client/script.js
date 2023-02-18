@@ -90,7 +90,7 @@ const handleSubmit = async (e) => {
     loader(messageDiv)
 
     const question = data.get('prompt')
-    const airtableUrl = `https://api.airtable.com/appolcoyLfSXX3Xhy/QA?maxRecords=1&filterByFormula=AND({Question}="${question}")`;
+    const airtableUrl = `https://api.airtable.com//v0/appolcoyLfSXX3Xhy/QA?maxRecords=1&filterByFormula=AND({Question}="${question}")`;
 
     const response = await fetch(airtableUrl, {
         headers: {
