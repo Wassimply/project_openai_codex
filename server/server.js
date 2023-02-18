@@ -36,8 +36,8 @@ app.post('/question', async (req, res) => {
       },
     });
 
-    // If the response is successful and has records, send back the answer field value as a JSON response
-    if (response.status === 200 && response.data.records.length > 0) {
+    // If the response is successful and has at least one record, send back the answer field value as a JSON response
+    if (response.status === 200 && response.data.records && response.data.records.length > 0) {
       const answer = response.data.records[0].fields.Answer;
       res.json({ answer });
     } else {
@@ -52,7 +52,6 @@ app.post('/question', async (req, res) => {
     res.status(500).json({ error: 'An internal server error occurred.' });
   }
 });
-
 
 // Start the server
 app.listen(port, () => {
