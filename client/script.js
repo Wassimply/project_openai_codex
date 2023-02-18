@@ -91,7 +91,7 @@ const handleSubmit = async (e) => {
   console.log('User prompt:', question);
   const airtableUrl = `https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA?maxRecords=1&filterByFormula=AND({Question}="${question}")`;
 
-  try {
+try {
   const response = await axios.get(airtableUrl, {
     headers: {
       Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
@@ -118,6 +118,7 @@ const handleSubmit = async (e) => {
   console.error(error);
   messageDiv.innerHTML = "idk";
 }
+
 
 
 form.addEventListener('submit', handleSubmit)
