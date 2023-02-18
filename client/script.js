@@ -61,7 +61,6 @@ function chatStripe(isAi, value, uniqueId) {
   `
   );
 }
-
 const handleSubmit = async (e) => {
   e.preventDefault();
 
@@ -99,63 +98,65 @@ const handleSubmit = async (e) => {
   const messageDiv = document.getElementById(uniqueId);
 
   // messageDiv.innerHTML = "..."
-  loader(messageDiv); 
-const question = data.get('prompt');
-const airtableUrl = `https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA`;
-
-try {
-  // Add new question to Airtable table
-  await fetch(airtableUrl, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer keyO4UTbHbZ9n0vui`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      "fields": {
-        "Question": question
-      }
-    })
-  });
-
-  // bot's chatstripe
-  const uniqueId = generateUniqueId();
-  chatContainer.innerHTML += chatStripe(true, " ", uniqueId);
-
-  // specific message div 
-  const messageDiv = document.getElementById(uniqueId);
-
-  // messageDiv.innerHTML = "..."
   loader(messageDiv);
 
-  const airtableUrlWithFilter = `https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA?maxRecords=1&filterByFormula=AND({Question}="${question}")`;
+  const question = data.get('prompt');
+  const airtableUrl = `https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA`;
 
-  // Wait up to 10 seconds for the answer to be populated
-  let answer;
-  for (let i = 0; i < 10; i++) {
-    const response = await fetch(airtableUrlWithFilter, {
+  try {
+    // Add new question to Airtable table
+    await fetch(airtableUrl, {
+      method: 'POST',
       headers: {
-        'Authorization': `Bearer keyO4UTbHbZ9n0vui`
-      }
+        'Authorization': `Bearer keyO4UTbHbZ9n0vui`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        "fields": {
+          "Question": question
+        }
+      })
     });
 
-    if (response.ok) {
-      const data = await response.json();
-      if (data.records.length > 0 && data.records[0].fields.Answer) {
-        answer = data.records[0].fields.Answer.trim();
-        break;
+    // bot's chatstripe
+    const uniqueId = generateUniqueId();
+    chatContainer.innerHTML += chatStripe(true, " ", uniqueId);
+
+    // specific message div 
+    const messageDiv = document.getElementById(uniqueId);
+
+    // messageDiv.innerHTML = "..."
+    loader(messageDiv);
+
+    const airtableUrlWithFilter = `https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA?maxRecords=1&filterByFormula=AND({Question}="${question}")`;
+
+    // Wait up to 10 seconds for the answer to be populated
+    let answer;
+    for (let i = 0; i < 10; i++) {
+      const response = await fetch(airtableUrlWithFilter, {
+        headers: {
+          'Authorization': `Bearer keyO4UTbHbZ9n0vui`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.records.length > 0 && data.records[0].fields.Answer) {
+          answer = data.records[0].fields.Answer.trim();
+          break;
+        }
       }
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    if (answer) {
+      typeText(messageDiv, answer);
+    } else {
+      messageDiv.innerHTML = "Sorry, I don't have an answer for that right now.";
+    }
+  } catch (error) {
+    console.error(error);
+    messageDiv.innerHTML = "Oops, something went wrong. Please try again later.";
   }
-
-  if (answer) {
-    typeText(messageDiv, answer);
-  } else {
-    messageDiv.innerHTML = "Sorry, I don't have an answer for that right now.";
-  }
-} catch (error) {
-  console.error(error);
-  messageDiv.innerHTML = "Oops, something went wrong. Please try again later.";
-}
+};
