@@ -90,11 +90,11 @@ const handleSubmit = async (e) => {
     loader(messageDiv)
 
     const question = data.get('prompt')
-    const airtableUrl = `https://api.airtable.com/v0/${process.env.REACT_APP_AIRTABLE_BASE_ID}/QA?maxRecords=1&filterByFormula=AND({Question}="${question}")`;
+    const airtableUrl = `https://api.airtable.com/appolcoyLfSXX3Xhy/QA?maxRecords=1&filterByFormula=AND({Question}="${question}")`;
 
     const response = await fetch(airtableUrl, {
         headers: {
-            'Authorization': `Bearer ${process.env.REACT_APP_AIRTABLE_API_KEY}`
+            'Authorization': `Bearer ${process.env.AIRTABLE_API_KEY}`
         }
     })
 
