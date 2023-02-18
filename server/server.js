@@ -23,21 +23,22 @@ app.post('/question', async (req, res) => {
     const airtableUrl = `https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA`;
 
     // Add new question to Airtable table
-await axios.post(airtableUrl, {
-  records: [{
-    fields: {
-      Question: question,
-      Answer: '', // initially empty until the bot responds
-    },
-  }],
-}, {
-  headers: {
-    Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
-    'Content-Type': 'application/json',
-  },
-});
+    const response = await axios.post(airtableUrl, {
+      records: [{
+        fields: {
+          Question: question,
+          Answer: '', // initially empty until the bot responds
+        },
+      }],
+    }, {
+      headers: {
+        Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    });
 
-
+    // Retrieve the newly created record ID
+    const newRecordId = response.data.records[0].id;
 
     // Wait up to 10 seconds for the answer to be populated
     let answer;
@@ -45,7 +46,7 @@ await axios.post(airtableUrl, {
       const response = await axios.get(airtableUrl, {
         params: {
           maxRecords: 1,
-          filterByFormula: `AND({Question}="${question}", NOT({Answer}=""))`,
+          filterByFormula: `AND({Record ID}="${newRecordId}", NOT({Answer}=""))`,
         },
         headers: {
           Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
