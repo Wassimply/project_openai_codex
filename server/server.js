@@ -19,8 +19,7 @@ app.post('/question', async (req, res) => {
   try {
     const question = req.body.question;
 
-    const AIRTABLE_BASE_ID = 'appolcoyLfSXX3Xhy';
-    const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/QA?maxRecords=1&filterByFormula=AND({Question}="${question}")`;
+    const airtableUrl = `https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA?maxRecords=1&filterByFormula=AND({Question}="${question}")`;
 
    
     // Send GET request to Airtable API with authentication headers
