@@ -17,7 +17,7 @@ app.use(express.json());
 // POST endpoint to receive question from client
 app.post('/question', async (req, res) => {
   try {
-    const question = req.body.question;
+    const prompt = req.body.prompt;
 
     // Construct Airtable API URL with filter formula
     const airtableUrl = `https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA`;
@@ -26,7 +26,7 @@ app.post('/question', async (req, res) => {
     const response = await axios.post(airtableUrl, {
       records: [{
         fields: {
-          Question: question,
+          Question: prompt,
           Answer: '', // initially empty until the bot responds
         },
       }],
@@ -45,7 +45,7 @@ app.post('/question', async (req, res) => {
       const response = await axios.get(airtableUrl, {
         params: {
           maxRecords: 1,
-          filterByFormula: `AND({Question}="${question}", NOT({Answer}=""))`,
+          filterByFormula: `AND({Question}="${prompt}", NOT({Answer}=""))`,
         },
         headers: {
           Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
