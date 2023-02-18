@@ -1,44 +1,46 @@
-import express from 'express';
-import * as dotenv from 'dotenv';
-import cors from 'cors';
-import axios from 'axios';
-
-dotenv.config();
-
+require("dotenv").config();
+const express = require("express");
+const bodyParser = require("body-parser");
+const axios = require("axios");
 const app = express();
-app.use(cors());
-app.use(express.json());
+const port = process.env.PORT || 3000;
+const airtableUrl = `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/QA`;
 
-app.get('/', async (req, res) => {
-  res.status(200).send({
-    message: 'Hello from Pure!'
-  });
-});
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
-app.post('/', async (req, res) => {
+app.post("/webhook", async (req, res) => {
+  const question = req.body.message.text;
+
+  const airtableParams = {
+    maxRecords: 1,
+    filterByFormula: `AND({Question}="${question}")`,
+  };
+
   try {
-    const question = req.body.prompt;
-    const airtableUrl = `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/QA?maxRecords=1&filterByFormula=AND({Question}="${question.replace(/"/g, '\\"')}")`;
-    const headers = {
-      Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`
+    const { data } = await axios.get(airtableUrl, {
+      params: airtableParams,
+      headers: {
+        Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
+      },
+    });
+
+    const botResponse = data.records.length > 0 ? data.records[0].fields.Answer : "I'm sorry, I don't understand your question.";
+
+    const response = {
+      bot: {
+        name: "AirtableBot",
+        response: botResponse,
+      },
     };
-    const response = await axios.get(airtableUrl, { headers });
-    console.log('Response:', response.data);
-    if (response.data.records.length > 0) {
-      const record = response.data.records[0];
-      const answer = record.fields.Answer;
-      res.status(200).send({
-        bot: answer
-      });
-    } else {
-      res.status(404).send({
-        message: 'No answer found for that question'
-      });
-    }
+
+    res.send(response);
   } catch (error) {
-    console.error(error);
-    res.status(500).send(error || 'Something went wrong');
+    console.log(error);
+    res.sendStatus(500);
   }
 });
 
-app.listen(5000, () => console.log('AI server started on http://localhost:5000'));
+app.listen(port, () => {
+  console.log(`Server listening on port ${port}`);
+});
