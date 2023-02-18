@@ -102,9 +102,12 @@ const handleSubmit = async (e) => {
 
     if (response.ok) {
       const data = await response.json();
-      const answer = data.records[0].fields.Answer.trim(); // get the answer field value from the Airtable response
-
-      typeText(messageDiv, answer);
+      if (data.records && data.records.length > 0) {
+        const answer = data.records[0].fields.Answer.trim(); // get the answer field value from the Airtable response
+        typeText(messageDiv, answer);
+      } else {
+        messageDiv.innerHTML = "I'm sorry, I don't know the answer to that. Would you like to teach me?";
+      }
     } else {
       const err = await response.text();
 
@@ -116,6 +119,7 @@ const handleSubmit = async (e) => {
     messageDiv.innerHTML = "idk";
   }
 };
+
 
 
 form.addEventListener('submit', handleSubmit)
