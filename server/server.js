@@ -37,12 +37,17 @@ app.post('/question', async (req, res) => {
       res.status(response.status).json({ error: 'An error occurred while fetching the answer.' });
     }
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'An internal server error occurred.' });
+    if (error.response && error.response.status === 401) {
+      console.error('Airtable API key is invalid or missing.');
+      res.status(500).json({ error: 'An internal server error occurred.' });
+    } else {
+      console.error(error);
+      res.status(500).json({ error: 'An internal server error occurred.' });
+    }
   }
 });
 
-// Log when the server has started
+// Start the server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}.`);
 });
