@@ -61,7 +61,6 @@ function chatStripe(isAi, value, uniqueId) {
     `
     )
 }
-
 const handleSubmit = async (e) => {
     e.preventDefault()
 
@@ -86,14 +85,13 @@ const handleSubmit = async (e) => {
     // messageDiv.innerHTML = "..."
     loader(messageDiv)
 
-    const response = await fetch('https://nftgpt.onrender.com/', {
-        method: 'POST',
+    const question = data.get('prompt')
+    const airtableUrl = `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/QA?maxRecords=1&filterByFormula=AND({Question}="${question}")`;
+
+    const response = await fetch(airtableUrl, {
         headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            prompt: data.get('prompt')
-        })
+            'Authorization': `Bearer ${process.env.AIRTABLE_API_KEY}`
+        }
     })
 
     clearInterval(loadInterval)
@@ -101,15 +99,17 @@ const handleSubmit = async (e) => {
 
     if (response.ok) {
         const data = await response.json();
-        const parsedData = data.bot.trim() // trims any trailing spaces/'\n' 
+        const answer = data.records[0].fields.Answer.trim() // get the answer field value from the Airtable response
 
-        typeText(messageDiv, parsedData)
+        typeText(messageDiv, answer)
     } else {
         const err = await response.text()
 
         messageDiv.innerHTML = "Something went wrong"
         alert(err)
     }
+}
+
 }
 
 form.addEventListener('submit', handleSubmit)
