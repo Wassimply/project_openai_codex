@@ -99,16 +99,22 @@ const handleSubmit = async (e) => {
     messageDiv.innerHTML = " "
 
     if (response.ok) {
-        const data = await response.json();
-        const answer = data.records[0].fields.Answer.trim() // get the answer field value from the Airtable response
+  const data = await response.json();
+  const answer = data.records[0].fields.Answer.trim(); // get the answer field value from the Airtable response
 
-        typeText(messageDiv, answer)
-    } else {
-        const err = await response.text()
+  typeText(messageDiv, answer);
+} else {
+  const err = await response.text();
 
-        messageDiv.innerHTML = "Something went wrong"
-        alert(err)
-    }
+  messageDiv.innerHTML = "Something went wrong";
+  alert(err);
+  // display default message after 30 seconds
+  const defaultAnswer = "Sorry, I couldn't find an answer to that question. I'll look into it and get back to you soon!";
+  setTimeout(() => {
+    messageDiv.innerHTML = defaultAnswer;
+  }, 30000);
+}
+
 }
 
 form.addEventListener('submit', handleSubmit)
