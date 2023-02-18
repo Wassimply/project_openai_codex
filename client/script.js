@@ -70,6 +70,9 @@ const handleSubmit = async (e) => {
     // user's chatstripe
     chatContainer.innerHTML += chatStripe(false, data.get('prompt'))
 
+    // log the user's question
+    console.log(`User question: ${data.get('prompt')}`);
+
     // to clear the textarea input 
     form.reset()
 
@@ -110,6 +113,7 @@ const handleSubmit = async (e) => {
         alert(err)
     }
 }
+
 
 form.addEventListener('submit', handleSubmit)
 form.addEventListener('keyup', (e) => {
