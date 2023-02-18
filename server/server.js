@@ -24,7 +24,7 @@ app.post('/question', async (req, res) => {
     // Send GET request to Airtable API with authentication headers
     const response = await axios.get(airtableUrl, {
       headers: {
-        Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
+        Authorization: `Bearer keyO4UTbHbZ9n0vui`,
       },
     });
 
