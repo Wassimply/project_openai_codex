@@ -1,4 +1,4 @@
-import bot from './assets/bot.svg'
+what do i need to change on the client script.js ( import bot from './assets/bot.svg'
 import user from './assets/user.svg'
 
 const form = document.querySelector('form')
@@ -90,57 +90,35 @@ const handleSubmit = async (e) => {
     loader(messageDiv)
 
     const question = data.get('prompt')
-    const airtableUrl = 'https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA'
-
-    const requestBody = {
-        records: [
-            {
-                fields: {
-                    Question: question,
-                    Answer: ''
-                }
-            }
-        ]
-    }
+    const airtableUrl = `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/QA?maxRecords=1&filterByFormula=AND({Question}="${question}")`;
 
     const response = await fetch(airtableUrl, {
-        method: 'POST',
         headers: {
-            'Authorization': `Bearer keyO4UTbHbZ9n0vui`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestBody)
-    })
-
-
-  if (response.ok) {
-    // Wait for up to 60 seconds for the answer field to be populated
-    const startTime = Date.now()
-    let answer = ''
-
-    while (!answer && (Date.now() - startTime) < 60000) {
-      const response = await fetch(airtableUrl, {
-        headers: {
-          'Authorization': `Bearer keyO4UTbHbZ9n0vui`
+            'Authorization': `Bearer ${process.env.AIRTABLE_API_KEY}`
         }
-      })
-      
-      const data = await response.json()
-      const record = data.records.find(record => record.fields.Question === question)
-
-      if (record && record.fields.Answer) {
-        answer = record.fields.Answer
-      } else {
-        await new Promise(resolve => setTimeout(resolve, 1000))
-      }
-    }
+    })
 
     clearInterval(loadInterval)
     messageDiv.innerHTML = " "
-    typeText(messageDiv, answer)
-  } else {
-    clearInterval(loadInterval)
-    messageDiv.innerHTML = "Something went wrong"
-    alert(response.statusText)
-  }
+
+    if (response.ok) {
+        const data = await response.json();
+        const answer = data.records[0].fields.Answer.trim() // get the answer field value from the Airtable response
+
+        typeText(messageDiv, answer)
+    } else {
+        const err = await response.text()
+
+        messageDiv.innerHTML = "Something went wrong"
+        alert(err)
+    }
 }
+
+
+form.addEventListener('submit', handleSubmit)
+form.addEventListener('keyup', (e) => {
+    if (e.keyCode === 13) {
+        handleSubmit(e)
+    }
+})
+) 
