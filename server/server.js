@@ -27,6 +27,7 @@ await axios.post(airtableUrl, {
   records: [{
     fields: {
       Question: question,
+      Answer: '', // initially empty until the bot responds
     },
   }],
 }, {
@@ -35,6 +36,7 @@ await axios.post(airtableUrl, {
     'Content-Type': 'application/json',
   },
 });
+
 
 
     // Wait up to 10 seconds for the answer to be populated
