@@ -106,7 +106,7 @@ const handleSubmit = async (e) => {
   const response = await fetch(airtableUrl, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${process.env.AIRTABLE_API_KEY}`,
+      'Authorization': `Bearer keyO4UTbHbZ9n0vui`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(requestBody),
@@ -119,7 +119,7 @@ if (response.ok) {
     while (!answer && (Date.now() - startTime) < 60000) {
       const response = await fetch(airtableUrl, {
         headers: {
-          'Authorization': `Bearer ${process.env.AIRTABLE_API_KEY}`,
+          'Authorization': `Bearer keyO4UTbHbZ9n0vui`,
         },
       });
       
