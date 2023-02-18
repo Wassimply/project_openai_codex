@@ -101,11 +101,12 @@ const handleSubmit = async (e) => {
   loader(messageDiv);
 
   const question = data.get('prompt');
-  const airtableUrl = `https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA`;
 
   try {
+    const airtableUrlWithFilter = `https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA`;
+
     // Add new question to Airtable table
-    await fetch(airtableUrl, {
+    await fetch(airtableUrlWithFilter, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer keyO4UTbHbZ9n0vui`,
