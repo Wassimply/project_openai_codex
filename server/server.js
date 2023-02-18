@@ -21,14 +21,12 @@ app.post('/question', async (req, res) => {
 
     const airtableUrl = `https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA?maxRecords=1&filterByFormula=AND({Question}="${question}")`;
 
-   
     // Send GET request to Airtable API with authentication headers
     const response = await axios.get(airtableUrl, {
       headers: {
         Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
       },
     });
-    
 
     // If the response is successful, send back the answer field value as a JSON response
     if (response.status === 200) {
@@ -44,7 +42,7 @@ app.post('/question', async (req, res) => {
   }
 });
 
-// Start the server
+// Log when the server has started
 app.listen(port, () => {
   console.log(`Server is running on port ${port}.`);
 });
