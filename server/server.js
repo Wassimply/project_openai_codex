@@ -1,61 +1,49 @@
-// Import necessary libraries
-const express = require('express');
-const bodyParser = require('body-parser');
-const axios = require('axios');
-const cors = require('cors');
-require('dotenv').config();
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import axios from 'axios';
 
-// Create an instance of Express
+dotenv.config();
+
 const app = express();
+const port = process.env.PORT || 3000;
 
-// Middleware to parse request bodies
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-
-// Enable Cross-Origin Resource Sharing (CORS)
+// Enable CORS middleware
 app.use(cors());
 
-// Get the Airtable base ID and API key from environment variables
-const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
-const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
+// Parse incoming JSON requests
+app.use(express.json());
 
-// Endpoint for handling POST requests to /question
+// POST endpoint to receive question from client
 app.post('/question', async (req, res) => {
   try {
     const question = req.body.question;
 
-    // Construct the Airtable API URL with the question as a filter
-    const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/QA?maxRecords=1&filterByFormula=AND({Question}="${question}")`;
+    // Construct Airtable API URL with filter formula
+    const airtableUrl = `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/QA?maxRecords=1&filterByFormula=AND({Question}="${question}")`;
 
-    // Make a GET request to the Airtable API with the authorization header
+    // Send GET request to Airtable API with authentication headers
     const response = await axios.get(airtableUrl, {
       headers: {
-        Authorization: `Bearer ${AIRTABLE_API_KEY}`,
+        Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
       },
     });
 
-    // If the response is OK, get the answer field value from the Airtable response
-    if (response.ok) {
-      const data = response.data;
-      const answer = data.records[0].fields.Answer.trim();
-
-      // Send the answer as a JSON response
+    // If the response is successful, send back the answer field value as a JSON response
+    if (response.status === 200) {
+      const answer = response.data.records[0].fields.Answer;
       res.json({ answer });
     } else {
-      // If the response is not OK, send a 500 Internal Server Error response
-      res.sendStatus(500);
+      // Otherwise, send an error response
+      res.status(response.status).json({ error: 'An error occurred while fetching the answer.' });
     }
   } catch (error) {
-    // If there is an error, log it to the console and send a 500 Internal Server Error response
     console.error(error);
-    res.sendStatus(500);
+    res.status(500).json({ error: 'An internal server error occurred.' });
   }
 });
 
-// Get the port number from the environment variable or use 3000 as the default
-const PORT = process.env.PORT || 3000;
-
-// Start the server and listen on the specified port
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
+// Start the server
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}.`);
 });
