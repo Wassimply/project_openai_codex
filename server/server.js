@@ -1,4 +1,4 @@
-import express from 'express';
+ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import axios from 'axios';
@@ -39,7 +39,7 @@ app.post('/question', async (req, res) => {
       const selectUrl = `https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA/${recordId}`;
       const selectResponse = await axios.get(selectUrl, {
         headers: {
-          Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
+          Authorization: `Bearer keyO4UTbHbZ9n0vui`,
         },
       });
       answer = selectResponse.data.fields.Answer;
