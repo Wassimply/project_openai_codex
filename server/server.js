@@ -19,15 +19,17 @@ app.post('/question', async (req, res) => {
   try {
     const question = req.body.question;
 
-    // Construct Airtable API URL with filter formula
-    const airtableUrl = `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/QA?maxRecords=1&filterByFormula=AND({Question}="${question}")`;
+    const AIRTABLE_BASE_ID = 'appolcoyLfSXX3Xhy';
+    const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/QA?maxRecords=1&filterByFormula=AND({Question}="${question}")`;
 
+   
     // Send GET request to Airtable API with authentication headers
     const response = await axios.get(airtableUrl, {
       headers: {
         Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
       },
     });
+    
 
     // If the response is successful, send back the answer field value as a JSON response
     if (response.status === 200) {
