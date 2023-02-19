@@ -61,7 +61,6 @@ function chatStripe(isAi, value, uniqueId) {
   `
   );
 }
-
 const handleSubmit = async (e) => {
   e.preventDefault();
 
@@ -86,41 +85,39 @@ const handleSubmit = async (e) => {
   // messageDiv.innerHTML = "..."
   loader(messageDiv);
 
-  
   const question = data.get('prompt');
-  console.log(`Sending question to server: ${question}`);
-  const airtableUrl = `https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA?maxRecords=1&filterByFormula=AND({Question}="${question}")`;
 
   try {
-    console.log(`Sending request to Airtable API: ${airtableUrl}`);
-    const response = await fetch(airtableUrl, {
+    console.log(`Sending question "${question}" to server...`);
+
+    const response = await fetch('/question', {
+      method: 'POST',
       headers: {
-        'Authorization': `Bearer keyO4UTbHbZ9n0vui`
-      }
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ prompt: question }),
     });
 
     clearInterval(loadInterval);
     messageDiv.innerHTML = "";
 
     if (response.ok) {
-      console.log(`Received successful response from Airtable API: ${JSON.stringify(response)}`);
       const data = await response.json();
-      const answer = data.records[0].fields.Answer.trim(); // get the answer field value from the Airtable response
+      const answer = data.answer.trim();
 
       console.log(`Bot's answer to question "${question}" is "${answer}"`);
       typeText(messageDiv, answer);
     } else {
-      const err = await response.text();
-
-      console.log(`Error occurred while getting response from Airtable API: ${err}`);
+      console.log(`Error occurred while getting response from server: ${response.status} ${response.statusText}`);
       messageDiv.innerHTML = "Something went wrong";
-      alert(err);
+      alert(`Error occurred while getting response from server: ${response.status} ${response.statusText}`);
     }
   } catch (error) {
     console.error(error);
     messageDiv.innerHTML = "idk";
   }
 };
+
 
 
 form.addEventListener('submit', handleSubmit)
