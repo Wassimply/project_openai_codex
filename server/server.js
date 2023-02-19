@@ -14,59 +14,49 @@ app.use(cors());
 // Parse incoming JSON requests
 app.use(express.json());
 
+// Construct Airtable API URL
+const airtableUrl = 'https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA';
+
 // POST endpoint to receive question from client
 app.post('/question', async (req, res) => {
   try {
-    const prompt = req.body && req.body.prompt;
+    const question = req.body.prompt;
 
-    // Construct Airtable API URL with filter formula
-    const airtableUrl = `https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA`;
-
-    // Add new question to Airtable table
-const response = await axios.post(airtableUrl, {
-  fields: {
-    Question: prompt,
-    Answer: '', // initially empty until the bot responds
-  },
-}, {
-  headers: {
-    Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
-    'Content-Type': 'application/json',
-  },
-});
-
-
-    console.log(response.data);
-
-    // Wait up to 10 seconds for the answer to be populated
-    let answer;
-    for (let i = 0; i < 10; i++) {
-      const response = await axios.get(airtableUrl, {
-        params: {
-          maxRecords: 1,
-          filterByFormula: `AND({Question}="${prompt}", NOT({Answer}=""))`,
-        },
-        headers: {
-          Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
-        },
-      });
-
-      console.log(response.data);
-
-      if (response.data.records.length > 0) {
-        answer = response.data.records[0].fields.Answer;
-        break;
+    // Look up existing question in Airtable
+    const existingQuestionsResponse = await axios.get(airtableUrl, {
+      params: {
+        maxRecords: 1,
+        filterByFormula: `{Question} = "${question}"`
+      },
+      headers: {
+        'Authorization': `Bearer ${process.env.AIRTABLE_API_KEY}`
       }
+    });
 
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
+    const existingQuestionsData = existingQuestionsResponse.data;
 
-    if (answer) {
-      // If the response is successful, send back the answer field value as a JSON response
+    if (existingQuestionsData.records.length > 0) {
+      // If the question already exists, get the answer from Airtable and return it
+      const existingQuestion = existingQuestionsData.records[0];
+      const answer = existingQuestion.fields.Answer.trim();
+      console.log(`Bot's answer to question "${question}" is "${answer}"`);
       res.json({ answer });
     } else {
-      // If no answer is found after 10 seconds, send a timeout error response
-      res.status(408).json({ error: 'A timeout error occurred while fetching the answer.' });
+      // If the question does not exist, add a new record to Airtable with an empty answer
+      const newQuestionResponse = await axios.post(airtableUrl, {
+        fields: {
+          Question: question,
+          Answer: ''
+        }
+      }, {
+        headers: {
+          'Authorization': `Bearer ${process.env.AIRTABLE_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log(`Added new question "${question}" to Airtable`);
+      res.json({ answer: '' });
     }
   } catch (error) {
     console.error(error);
