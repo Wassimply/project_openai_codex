@@ -1,131 +1,80 @@
-import bot from './assets/bot.svg';
-import user from './assets/user.svg';
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import axios from 'axios';
 
-const form = document.querySelector('form');
-const chatContainer = document.querySelector('#chat_container');
+dotenv.config();
 
-let loadInterval;
+const app = express();
+const port = process.env.PORT || 3000;
 
-function loader(element) {
-  element.textContent = '';
+// Enable CORS middleware
+app.use(cors());
 
-  loadInterval = setInterval(() => {
-    // Update the text content of the loading indicator
-    element.textContent += '.';
+// Parse incoming JSON requests
+app.use(express.json());
 
-    // If the loading indicator has reached three dots, reset it
-    if (element.textContent === '....') {
-      element.textContent = '';
-    }
-  }, 300);
-}
-
-function typeText(element, text) {
-  let index = 0;
-
-  let interval = setInterval(() => {
-    if (index < text.length) {
-      element.innerHTML += text.charAt(index);
-      index++;
-    } else {
-      clearInterval(interval);
-    }
-  }, 20);
-}
-
-// generate unique ID for each message div of bot
-// necessary for typing text effect for that specific reply
-// without unique ID, typing text will work on every element
-function generateUniqueId() {
-  const timestamp = Date.now();
-  const randomNumber = Math.random();
-  const hexadecimalString = randomNumber.toString(16);
-
-  return `id-${timestamp}-${hexadecimalString}`;
-}
-
-function chatStripe(isAi, value, uniqueId) {
-  return (
-    `
-    <div class="wrapper ${isAi && 'ai'}">
-        <div class="chat">
-            <div class="profile">
-                <img 
-                  src=${isAi ? bot : user} 
-                  alt="${isAi ? 'bot' : 'user'}" 
-                />
-            </div>
-            <div class="message" id=${uniqueId}>${value}</div>
-        </div>
-    </div>
-  `
-  );
-}
-
-const handleSubmit = async (e) => {
-  e.preventDefault();
-
-  const data = new FormData(form);
-
-  // user's chatstripe
-  chatContainer.innerHTML += chatStripe(false, data.get('prompt'));
-
-  // to clear the textarea input 
-  form.reset();
-
-  // bot's chatstripe
-  const uniqueId = generateUniqueId();
-  chatContainer.innerHTML += chatStripe(true, " ", uniqueId);
-
-  // to focus scroll to the bottom 
-  chatContainer.scrollTop = chatContainer.scrollHeight;
-
-  // specific message div 
-  const messageDiv = document.getElementById(uniqueId);
-
-  // messageDiv.innerHTML = "..."
-  loader(messageDiv);
-
-  
-  const question = data.get('prompt');
-  console.log(`Sending question to server: ${question}`);
-  const airtableUrl = `https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA?maxRecords=1&filterByFormula=AND({Question}="${question}")`;
-
+// POST endpoint to receive question from client
+app.post('/question', async (req, res) => {
   try {
-    console.log(`Sending request to Airtable API: ${airtableUrl}`);
-    const response = await fetch(airtableUrl, {
-      headers: {
-        'Authorization': `Bearer keyO4UTbHbZ9n0vui`
+    const prompt = req.body && req.body.prompt;
+
+    // Construct Airtable API URL with filter formula
+    const airtableUrl = `https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA`;
+
+    // Add new question to Airtable table
+const response = await axios.post(airtableUrl, {
+  fields: {
+    Question: prompt,
+    Answer: '', // initially empty until the bot responds
+  },
+}, {
+  headers: {
+    Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
+    'Content-Type': 'application/json',
+  },
+});
+
+
+    console.log(response.data);
+
+    // Wait up to 10 seconds for the answer to be populated
+    let answer;
+    for (let i = 0; i < 10; i++) {
+      const response = await axios.get(airtableUrl, {
+        params: {
+          maxRecords: 1,
+          filterByFormula: `AND({Question}="${prompt}", NOT({Answer}=""))`,
+        },
+        headers: {
+          Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
+        },
+      });
+
+      console.log(response.data);
+
+      if (response.data.records.length > 0) {
+        answer = response.data.records[0].fields.Answer;
+        break;
       }
-    });
 
-    clearInterval(loadInterval);
-    messageDiv.innerHTML = "";
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
 
-    if (response.ok) {
-      console.log(`Received successful response from Airtable API: ${JSON.stringify(response)}`);
-      const data = await response.json();
-      const answer = data.records[0].fields.Answer.trim(); // get the answer field value from the Airtable response
-
-      console.log(`Bot's answer to question "${question}" is "${answer}"`);
-      typeText(messageDiv, answer);
+    if (answer) {
+      // If the response is successful, send back the answer field value as a JSON response
+      res.json({ answer });
     } else {
-      const err = await response.text();
-
-      console.log(`Error occurred while getting response from Airtable API: ${err}`);
-      messageDiv.innerHTML = "Something went wrong";
-      alert(err);
+      // If no answer is found after 10 seconds, send a timeout error response
+      res.status(408).json({ error: 'A timeout error occurred while fetching the answer.' });
     }
   } catch (error) {
     console.error(error);
-    messageDiv.innerHTML = "idk";
+    res.status(500).json({ error: 'An internal server error occurred.' });
   }
-};
+});
 
-
-form.addEventListener('submit', handleSubmit)
-form.addEventListener('keyup', (e) => {
-    if (e.keyCode === 13) {
-        handleSubmit(e)
-    }
-})
+// Start the server
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}.`);
+});
