@@ -87,9 +87,11 @@ const handleSubmit = async (e) => {
   loader(messageDiv);
 
   const question = data.get('prompt');
+  console.log(`Sending question to server: ${question}`);
   const airtableUrl = `https://api.airtable.com/v0/appolcoyLfSXX3Xhy/QA?maxRecords=1&filterByFormula=AND({Question}="${question}")`;
 
   try {
+    console.log(`Sending request to Airtable API: ${airtableUrl}`);
     const response = await fetch(airtableUrl, {
       headers: {
         'Authorization': `Bearer keyO4UTbHbZ9n0vui`
@@ -100,13 +102,16 @@ const handleSubmit = async (e) => {
     messageDiv.innerHTML = "";
 
     if (response.ok) {
+      console.log(`Received successful response from Airtable API: ${JSON.stringify(response)}`);
       const data = await response.json();
       const answer = data.records[0].fields.Answer.trim(); // get the answer field value from the Airtable response
 
+      console.log(`Bot's answer to question "${question}" is "${answer}"`);
       typeText(messageDiv, answer);
     } else {
       const err = await response.text();
 
+      console.log(`Error occurred while getting response from Airtable API: ${err}`);
       messageDiv.innerHTML = "Something went wrong";
       alert(err);
     }
